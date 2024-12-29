@@ -6,7 +6,7 @@ Optimization Based and Point Uncertainty Aware Radar-inertial Odometry for 4D Ra
 
 Please refer to the `docker/Dockerfile` for the detailed dependencies.
 
-## Dcoker
+## Docker
 
 ### Start the docker container
 

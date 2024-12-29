@@ -142,6 +142,8 @@ std::vector<uchar> RadarTracker::searchCorrsponding(
         // Radar Cross Section difference
         if (!useRCSFilter ||
             abs(previousData.rcs - currentData.rcs) <= rcsThreshold) {
+          // std::cout << "Distance based (!useRCSFilter ||" <<
+            // "abs(previousData.rcs - currentData.rcs) <= rcsThreshold" << std::endl;
           auto pointA =
               Eigen::Vector3d{previousData.x, previousData.y, previousData.z};
           auto pointB =
@@ -169,6 +171,8 @@ std::vector<uchar> RadarTracker::searchCorrsponding(
 
         if (!useRCSFilter ||
             abs(previousData.rcs - currentData.rcs) <= rcsThreshold) {
+          // std::cout << "Convariance based !useRCSFilter ||" << 
+            // "abs(previousData.rcs - currentData.rcs) <= rcsThreshold" << std::endl;
           double PDF = calculatePDF(currentData, previousData);
           if (PDF > maxPDF) {
             maxPDF = PDF;
@@ -189,6 +193,7 @@ std::vector<uchar> RadarTracker::searchCorrsponding(
 
   for (int i = 0; i < matchScore.size(); i++) {
     if (matchScore[i].first != -1) {
+      std::cout << "never go here!!! (matchScore[i].first != -1) " << std::endl;
       detectedPoints.emplace_back(currentPoints[i]);
       Eigen::Vector3d PointA{previousPoints[matchScore[i].first].x,
                              previousPoints[matchScore[i].first].y,
@@ -241,11 +246,13 @@ void RadarTracker::trackAndDetectPoints(std::vector<Frame::RadarData> &points) {
   std::vector<Frame::RadarData> previousPoints;
   std::vector<uchar> status;
   if (!hasPrediction) {
+    std::cout << "!hasPrediction, seems to be inializing" << std::endl;
     // tracking with previous
     for (auto pts : trackingPoints) previousPoints.emplace_back(pts.data);
     status = searchCorrsponding(previousPoints, points, detectedPoints,
                                 undetectedPoints);
   } else {
+    // std::cout << "I have Prediction" << std::endl;
     // track with prediction
     // since it is more accurate than position measurement.
     // velocity prediction, we process it separately

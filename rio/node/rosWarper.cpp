@@ -242,6 +242,7 @@ std::vector<Frame::RadarData> RIO::decodeRadarMsg_ColoRadar(
 
 void RIO::factorGraphInit(std::vector<Frame::RadarData> &frameRadarData,
                           const ros::Time &timeStamp) {
+  std::cout << "radarExParam.rot is " << radarExParam.rot.toRotationMatrix() << std::endl << "radarExParam.vec is " << radarExParam.vec << std::endl;
   for (auto pts : frameRadarData) {
     Eigen::Vector3d p{pts.x, pts.y, pts.z};
     p = radarExParam.rot * p + radarExParam.vec;
@@ -336,6 +337,7 @@ void RIO::constructFactor(std::vector<Frame::RadarData> &frameRadarData,
   predState.rot = curState.rot * preintegration.getDeltaQ();
   predState.vel = curState.rot * preintegration.getDeltaV() + curState.vel -
                   gravity * preintegration.getTotalTime();
+  std::cout << "radarExParam.rot is " << radarExParam.rot.toRotationMatrix() << std::endl << "radarExParam.vec is " << radarExParam.vec << std::endl;
 
   Eigen::Vector3d unbiasedAngularVel =
       imuData.data.back().gyroData - predState.gyroBias;
@@ -346,6 +348,7 @@ void RIO::constructFactor(std::vector<Frame::RadarData> &frameRadarData,
       radarExParam.rot.inverse() * (radialVel + tangentVel);
 
   Eigen::Quaterniond curRotRadar = curState.rot * radarExParam.rot;
+  //curState: transform a point in body to world, rot first transform a point in radar frame to body.
   Eigen::Vector3d curVecRadar = curState.rot * radarExParam.vec + curState.vec;
   Eigen::Quaterniond predRotRadar = predState.rot * radarExParam.rot;
   Eigen::Vector3d predVecRadar =
@@ -678,9 +681,11 @@ void RIO::publish(const ros::Time &timeStamp) {
 
   int pointsNum = states.pointNum;
   if (pointsNum > 0) {
+    // std::cout << "radarFeatureFactor.pointRelation.size is " << radarFeatureFactor.pointRelation.size();
+    int valid_size = 0;
     for (auto &point : radarFeatureFactor.pointRelation) {
       if (point.frameId.size() < observationThreshold) continue;
-
+      valid_size ++;
       point.pointState.x() =
           states.pointState[pointsNum - states.pointNum].positionParams[0];
       point.pointState.y() =
@@ -703,6 +708,7 @@ void RIO::publish(const ros::Time &timeStamp) {
 
       states.pointNum--;
     }
+    // std::cout << ", where valid size is " << valid_size << std::endl;
   }
 
   sensor_msgs::PointCloud2 featureMsg;
