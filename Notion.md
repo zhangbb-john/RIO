@@ -13,7 +13,7 @@
 - [4. Sensor Charactoristic/Front end](#4-sensor-charactoristicfront-end)
   - [4.1. Radar](#41-radar)
     - [4.1.1. /radar\_frame](#411-radar_frame)
-  - [4.2. row\_step is what](#42-row_step-is-what)
+  - [4.2. what is row\_step](#42-what-is-row_step)
   - [4.3.](#43)
   - [4.4. IMU](#44-imu)
 - [5. Back end/Optimization](#5-back-endoptimization)
@@ -28,6 +28,7 @@
     - [6.2.2. rio](#622-rio)
 - [7. Issue](#7-issue)
   - [7.1. ERROR: Unable to start XML-RPC server, port 11311 is already in use (just occasionally occurs)](#71-error-unable-to-start-xml-rpc-server-port-11311-is-already-in-use-just-occasionally-occurs)
+  - [z error is very large](#z-error-is-very-large)
   - [7.2. Bug](#72-bug)
     - [7.2.1. the rio msg is strange,  always being jumping](#721-the-rio-msg-is-strange--always-being-jumping)
     - [7.2.2. the header timestamp of radar\_frame is wrong](#722-the-header-timestamp-of-radar_frame-is-wrong)
@@ -91,7 +92,7 @@ python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/ars548.yaml -d /ws
 ### 1.2.1. demo
 ![alt text](notion/rio_seq1.gif)
 ![alt text](notion/seq1.png)
-
+![alt text](notion/seq3_result.png)
 ### 1.2.2. rqt_graph 
 
 ![alt text](notion/rqtgraph.png)
@@ -123,7 +124,7 @@ python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/ars548.yaml -d /ws
 
 angle seems to be [-60, 60]x[-20, 20]
 
-## 4.2. row_step is what 
+## 4.2. what is row_step
 it is how many points there are in a single frame.
 
 ## 4.3. 
@@ -167,6 +168,9 @@ roscore -p 11312
 export ROS_MASTER_URI=http://localhost:11312
 ```
 
+## z error is very large
+![alt text](notion/seq3_z_err.png)
+![alt text](notion/seq1_z_small_err.png)
 ## 7.2. Bug
 ### 7.2.1. the rio msg is strange,  always being jumping
 ![alt text](notion/rio_bug.gif)

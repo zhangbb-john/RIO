@@ -33,6 +33,7 @@
 
 // Utility
 #include "MathUtility.hpp"
+#include "TextFileWriter.hpp"
 
 // PCL Library
 #include <pcl/PCLPointCloud2.h>
@@ -141,7 +142,9 @@ class RIO {
   // Factor
   Factor::RadarFeatureManager radarFeatureFactor;
   Factor::ImuPreintegrationManger imuFeatureFactor;
-
+  
+  // Record
+  TextFileWriter txtfile;
   // BaseFunc
   void getParam();
   void initROS(ros::NodeHandle &nh);

@@ -11,7 +11,7 @@ def ArgsParser(argv):
     parser.add_argument('-a', '--auto', action='store_true', help='Auto mode')
     parser.add_argument('-n', '--node', type=str, default='rio', help='Node name')
     parser.add_argument('-c', '--conf', type=str, default='config/ars548.yaml', help='Config file')
-    parser.add_argument('-d', '--dataset', type=str, default='dataset/exp/Sequence_1.bag', help='Path to the dataset')
+    parser.add_argument('-d', '--dataset', type=str, default='dataset/coloradar_trim/Sequence_3.bag', help='Path to the dataset')
     parser.add_argument('-r', '--round', type=int, default=1, help='Number of rounds')
     parser.add_argument('-p', '--playSpeed', type=float, default=0.25, help='Play speed')
 
@@ -19,6 +19,7 @@ def ArgsParser(argv):
 
 def RunEstimator(dataset, node, conf, round, playSpeed):
     dataset = os.path.join(BASE_DIR, dataset)
+    print('dataset is ', dataset)
     CMD = 'bash -c "source /opt/ros/`rosversion -d`/setup.bash && source {}/../devel/setup.bash && roslaunch rio TestRadar.launch round:={} nodeName:={} configFile:={} playBagpath:={} playSpeed:={}"'.format(BASE_DIR, round, node, conf, dataset, playSpeed)
     os.system(CMD)
 

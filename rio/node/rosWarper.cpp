@@ -10,6 +10,7 @@ RIO::~RIO() {}
 void RIO::initROS(ros::NodeHandle &nh) {
   nodeHandle = nh;
   getParam();
+  txtfile.initialize("/ws/src", "radar.txt");
 }
 
 void RIO::getParam() {
@@ -107,7 +108,6 @@ std::vector<Frame::RadarData> RIO::decodeRadarMsg_ARS548(
       offsetRCS = static_cast<int>(fields[i].offset);
   }
   pcl::PointCloud<pcl::PointXYZI> pointCloud;
-
   for (auto i = 0; i < msg.row_step; i++) {
     float azimuth = *reinterpret_cast<const float *>(
         msg.data.data() +
@@ -154,6 +154,14 @@ std::vector<Frame::RadarData> RIO::decodeRadarMsg_ARS548(
     pointCloud.emplace_back(point);
   }
 
+  double timestamp = msg.header.stamp.toSec();
+  txtfile << "0 0 0 " << timestamp << " 0 0 0 " << pointCloud.size() << " ";
+  for (size_t i = 0; i < pointCloud.size(); i++)
+  {
+    pcl::PointXYZI point = pointCloud[i];
+    txtfile << point.x << " " << point.y << " " << point.z << " " << point.intensity << " ";
+  }
+  txtfile << std::endl;
   // pointCloud to world frame
   // pcl::PointCloud<pcl::PointXYZI> pointCloudWorld;
   // pcl::transformPointCloud(pointCloud, pointCloudWorld, gtTransform);
@@ -726,6 +734,7 @@ void RIO::publish(const ros::Time &timeStamp) {
   pubMsg.pose.position.x = predState.vec.x();
   pubMsg.pose.position.y = predState.vec.y();
   pubMsg.pose.position.z = predState.vec.z();
+  txtfile << "0 0 0 " << timeStamp.toSec() << " " << pubMsg.pose.orientation.w << " " << pubMsg.pose.orientation.x << " " << pubMsg.pose.orientation.y << " " << pubMsg.pose.orientation.z << " 0 " << pubMsg.pose.position.x << " " << pubMsg.pose.position.y << " " << pubMsg.pose.position.z << std::endl;
   posePub.publish(pubMsg);
 
   // visualize path

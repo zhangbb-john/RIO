@@ -17,7 +17,7 @@
 
     <!-- Auto test tools-->
     <node pkg="rosbag" type="play" name="rosbag_play" required="true" args="$(arg playBagpath) -r $(arg playSpeed)" />
-    <!-- <node pkg="rosbag" type="record" name="rosbag_record" required="true" args="-o /ws/src/rio_output -a " /> -->
+    <node pkg="rosbag" type="record" name="rosbag_record" required="true" args="-o /ws/src/rio_output_seq3 /estimated_pose /pos_vel_mocap/odom_TA" />
 
     <node pkg="topic_tools" type="relay" name="relay" args="/rosbag_play/finished /shutdown" />
 
