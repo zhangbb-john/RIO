@@ -1,0 +1,1 @@
+python utils/ColoRadar_tools-master/python/plot_pointclouds.py -s ../../../dataset/classroom/_edgar_classroom_run3/ -c ../../../dataset/calib/

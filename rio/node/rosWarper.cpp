@@ -240,7 +240,14 @@ std::vector<Frame::RadarData> RIO::decodeRadarMsg_ColoRadar(
 
     pointCloud.emplace_back(point);
   }
-
+  double timestamp = msg.header.stamp.toSec();
+  txtfile << "0 0 0 " << timestamp << " 0 0 0 " << pointCloud.size() << " ";
+  for (size_t i = 0; i < pointCloud.size(); i++)
+  {
+    pcl::PointXYZI point = pointCloud[i];
+    txtfile << point.x << " " << point.y << " " << point.z << " " << point.intensity << " ";
+  }
+  txtfile << std::endl;
   sensor_msgs::PointCloud2 pubMsg;
   pcl::toROSMsg(pointCloud, pubMsg);
   pubMsg.header.frame_id = "world";

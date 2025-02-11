@@ -3,8 +3,10 @@
     - [1.1.1. Download the docker image by](#111-download-the-docker-image-by)
     - [1.1.2. Run the docker](#112-run-the-docker)
   - [1.2. ROS](#12-ros)
-    - [1.2.1. demo](#121-demo)
-    - [1.2.2. rqt\_graph](#122-rqt_graph)
+    - [1.2.1. coloradar](#121-coloradar)
+    - [1.2.2. reproduce the groundtruth](#122-reproduce-the-groundtruth)
+    - [1.2.3. demo](#123-demo)
+    - [1.2.4. rqt\_graph](#124-rqt_graph)
 - [2. Code interpretation](#2-code-interpretation)
   - [2.1. what is frame](#21-what-is-frame)
 - [3. inherit from vins-mono](#3-inherit-from-vins-mono)
@@ -28,10 +30,12 @@
     - [6.2.2. rio](#622-rio)
 - [7. Issue](#7-issue)
   - [7.1. ERROR: Unable to start XML-RPC server, port 11311 is already in use (just occasionally occurs)](#71-error-unable-to-start-xml-rpc-server-port-11311-is-already-in-use-just-occasionally-occurs)
-  - [z error is very large](#z-error-is-very-large)
-  - [7.2. Bug](#72-bug)
-    - [7.2.1. the rio msg is strange,  always being jumping](#721-the-rio-msg-is-strange--always-being-jumping)
-    - [7.2.2. the header timestamp of radar\_frame is wrong](#722-the-header-timestamp-of-radar_frame-is-wrong)
+  - [7.2. z error is very large](#72-z-error-is-very-large)
+  - [7.3. Bug](#73-bug)
+    - [7.3.1. the rio msg is strange,  always being jumping](#731-the-rio-msg-is-strange--always-being-jumping)
+    - [7.3.2. the header timestamp of radar\_frame is wrong](#732-the-header-timestamp-of-radar_frame-is-wrong)
+    - [7.3.3. the rviz is dark](#733-the-rviz-is-dark)
+- [8. Xu Yang questions](#8-xu-yang-questions)
 
 # 1. Steps to reproduce the results
 ## 1.1. Need docker?
@@ -89,11 +93,25 @@ bash 2
 ```
 python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/ars548.yaml -d /ws/src/dataset/exp/Sequence_1.bag -r 1 -p 1
 ```
-### 1.2.1. demo
+
+### 1.2.1. coloradar
+python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/coloradar.yaml -d dataset/coloradar_trim/colo_trim_outdoors_run_0_modified_gt2.bag -r 1 -p 1
+
+python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/coloradar.yaml -d dataset/coloradar_trim/colo_trim_outdoors_run_0_modified_gt2.bag -r 1 -p 1
+
+python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/coloradar.yaml -d dataset/coloradar_trim/classroom3.bag -r 1 -p 1
+
+python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/coloradar.yaml -d dataset/coloradar_trim/classroom3_modified_gt_horizontal.bag -r 1 -p 1
+
+### 1.2.2. reproduce the groundtruth
+evo_ape bag ./rio_output_seq3_2025-02-09-13-43-21_0.2toend.bag /estimated_pose /lidar_ground_truth -va --plot_mode xy --plot  --t_max_diff 0.05
+
+
+### 1.2.3. demo
 ![alt text](notion/rio_seq1.gif)
 ![alt text](notion/seq1.png)
 ![alt text](notion/seq3_result.png)
-### 1.2.2. rqt_graph 
+### 1.2.4. rqt_graph 
 
 ![alt text](notion/rqtgraph.png)
 
@@ -168,13 +186,22 @@ roscore -p 11312
 export ROS_MASTER_URI=http://localhost:11312
 ```
 
-## z error is very large
+## 7.2. z error is very large
 ![alt text](notion/seq3_z_err.png)
 ![alt text](notion/seq1_z_small_err.png)
-## 7.2. Bug
-### 7.2.1. the rio msg is strange,  always being jumping
+## 7.3. Bug
+### 7.3.1. the rio msg is strange,  always being jumping
 ![alt text](notion/rio_bug.gif)
 
-### 7.2.2. the header timestamp of radar_frame is wrong
+### 7.3.2. the header timestamp of radar_frame is wrong
 now it is zero, not very good. 
 also the frame is world, which is not appropriate for visualization.
+
+### 7.3.3. the rviz is dark
+we can adjust window size in the rviz file, makeing it smaller.
+
+sometimes retry many times can help alleviate the problem.
+
+other times waiting and retrying are okay.
+
+# 8. Xu Yang questions
