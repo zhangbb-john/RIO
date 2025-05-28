@@ -12,7 +12,9 @@ find_package(catkin REQUIRED
     rospy
     std_msgs
     sensor_msgs
-    nav_msgs)
+    nav_msgs
+    tf
+    tf2_ros)
 
 find_package(OpenCV REQUIRED)
 find_package(PCL REQUIRED)

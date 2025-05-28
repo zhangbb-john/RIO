@@ -5,17 +5,21 @@ from nav_msgs.msg import Odometry
 
 # Define the rotation matrix R and the offset
 
-seq = 'classroom3'
+seq = 'seq3'
 if seq == 'seq3':
-    R = np.array([[0.99102897, 0.13260436, -0.0166632],  
-    [-0.13334472, 0.98945426, -0.05656376],
-    [0.00898688, 0.05827827, 0.99825993]])
+    R = np.array([[0.99985743, -0.01688535, 0],
+            [0.01688535, 0.99985743, 0],
+            [0, 0, 1]])
+    offset = np.array([-4.68683812, -1.47742145, 0])
+    # R = np.array([[0.99102897, 0.13260436, -0.0166632],  
+    # [-0.13334472, 0.98945426, -0.05656376],
+    # [0.00898688, 0.05827827, 0.99825993]])
 
-    offset = np.array([-4.6082068, -1.15361245, 0.04214228])  # Example offset vector
+    # offset = np.array([-4.6082068, -1.15361245, 0.04214228])  # Example offset vector
 
     # Input and output bag files
     input_bag_path = "../dataset/exp/Sequence_3.bag"
-    output_bag_path = "../dataset/exp/Sequence_3_modified_gt2.bag"
+    output_bag_path = "../dataset/exp/Sequence_3_modified_gt_horizontal.bag"
     gt_topic = '/pos_vel_mocap/odom_TA'
 elif seq == 'coloradar2':
     R = np.array([[0.07624376, -0.99457773, 0.07072496],

@@ -5,10 +5,11 @@ from nav_msgs.msg import Odometry
 
 # Define the rotation matrix R and the offset
 
-input_bag_path = "../rio_output_seq3_2025-02-11-14-08-42-0--30.bag"
-output_bag_path = "../rio_output_seq3_2025-02-11-14-08-42-0--30.bag_modified_altitude0.bag"
+input_bag_path = "../rio_output_seq3_2025-02-13-15-38-25-0_10.bag"
+output_bag_path = "../rio_output_seq3_2025-02-13-15-38-25-0_10_modified_altitude0.bag"
 gt_topic = '/lidar_ground_truth'
 odom_topic = '/estimated_pose'
+gt_topic = '/pos_vel_mocap/odom_TA'
 
 num_topic = 0
 # Open input bag for reading

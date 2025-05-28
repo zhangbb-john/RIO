@@ -11,7 +11,8 @@
 #include "ros/ros.h"
 #include "sensor_msgs/Imu.h"
 #include "sensor_msgs/PointCloud2.h"
-
+#include <tf/transform_broadcaster.h>
+#include <tf2_ros/static_transform_broadcaster.h>
 // Data Manager
 #include "IMUManager.hpp"
 #include "RadarManager.hpp"
@@ -109,8 +110,9 @@ class RIO {
 
   ros::Publisher framePub;
   ros::Publisher trackingPub;
+  ros::Publisher trackPtPub;
   ros::Publisher subMapPub;
-
+  tf::TransformBroadcaster broadcaster;
   // Data
   Data::IMUManager imuData;
   Data::RadarManager radarData;
@@ -132,10 +134,17 @@ class RIO {
   };
   runtimeState curState;
   runtimeState predState;
-
+  // std::vector<Frontend::TrackingPointsInfo> tracking_points ;
+  std::map<uint32_t, Frame::RadarData> matchedPoints;
   struct exParam {
     Eigen::Vector3d vec;
     Eigen::Quaterniond rot;
+  };
+
+  struct TrackingPointsInfo {
+    uint32_t id;
+    uint32_t count;
+    Frame::RadarData data;
   };
   exParam radarExParam;
 
@@ -144,7 +153,7 @@ class RIO {
   Factor::ImuPreintegrationManger imuFeatureFactor;
   
   // Record
-  TextFileWriter txtfile;
+  TextFileWriter txtfile, radar_file, filtered_file, track_file;
   // BaseFunc
   void getParam();
   void initROS(ros::NodeHandle &nh);

@@ -9,12 +9,13 @@
 #include "RadarPreprocessor.hpp"
 
 namespace Frontend {
-class RadarTracker {
   struct TrackingPointsInfo {
     uint32_t id;
     uint32_t count;
     Frame::RadarData data;
   };
+class RadarTracker {
+
 
  public:
   RadarTracker() = default;
@@ -44,6 +45,7 @@ class RadarTracker {
                                Eigen::Vector3d previousVec,
                                Eigen::Quaterniond currentRot,
                                Eigen::Vector3d currentVec);
+  std::vector<TrackingPointsInfo> trackingPoints;
 
  private:
   void initialization(std::vector<Frame::RadarData> &points, ros::Time time);
@@ -66,7 +68,6 @@ class RadarTracker {
   Frame::RadarFrame currentFrame;
   uint32_t featureId = 0;
   uint32_t frameId = 0;
-  std::vector<TrackingPointsInfo> trackingPoints;
   std::vector<TrackingPointsInfo> previousTrackingPoints;
 
   bool hasPrediction = false;

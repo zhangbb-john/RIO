@@ -11,6 +11,9 @@ void RIO::initROS(ros::NodeHandle &nh) {
   nodeHandle = nh;
   getParam();
   txtfile.initialize("/ws/src", "radar.txt");
+  radar_file.initialize("/ws/src", "radar_all.txt");
+  track_file.initialize("/ws/src", "track.txt");
+  filtered_file.initialize("/ws/src", "filtered.txt");
 }
 
 void RIO::getParam() {
@@ -156,11 +159,23 @@ std::vector<Frame::RadarData> RIO::decodeRadarMsg_ARS548(
 
   double timestamp = msg.header.stamp.toSec();
   txtfile << "0 0 0 " << timestamp << " 0 0 0 " << pointCloud.size() << " ";
-  for (size_t i = 0; i < pointCloud.size(); i++)
+  radar_file << "0 0 0 0 " << timestamp << " 0 0 0 0 "; 
+  track_file << "0 0 0 0 " << timestamp << " 0 0 0 0 "; 
+  if (1)
   {
-    pcl::PointXYZI point = pointCloud[i];
-    txtfile << point.x << " " << point.y << " " << point.z << " " << point.intensity << " ";
+    radar_file << pointCloud.size() << " ";
+    // track_file << pointCloud.size() << " ";
+    for (size_t i = 0; i < pointCloud.size(); i++)
+    {
+      pcl::PointXYZI point = pointCloud[i];
+      txtfile << point.x << " " << point.y << " " << point.z << " " << point.intensity << " ";
+      radar_file << point.x << " " << point.y << " " << point.z << " " << point.intensity << " " << result[i].doppler << " ";
+      // track_file << point.x << " " << point.y << " " << point.z << " " << point.intensity << " " << result[i].doppler << " ";
+    }
+    radar_file << std::endl;
+    // track_file << std::endl;
   }
+
   txtfile << std::endl;
   // pointCloud to world frame
   // pcl::PointCloud<pcl::PointXYZI> pointCloudWorld;
@@ -171,7 +186,7 @@ std::vector<Frame::RadarData> RIO::decodeRadarMsg_ARS548(
 
   sensor_msgs::PointCloud2 pubMsg;
   pcl::toROSMsg(pointCloud, pubMsg);
-  pubMsg.header.frame_id = "world";
+  pubMsg.header.frame_id = "radar";
   framePub.publish(pubMsg);
   return result;
 }
@@ -242,10 +257,20 @@ std::vector<Frame::RadarData> RIO::decodeRadarMsg_ColoRadar(
   }
   double timestamp = msg.header.stamp.toSec();
   txtfile << "0 0 0 " << timestamp << " 0 0 0 " << pointCloud.size() << " ";
-  for (size_t i = 0; i < pointCloud.size(); i++)
+  radar_file << "0 0 0 0 " << timestamp << " 0 0 0 0 ";
+  track_file << "0 0 0 0 " << timestamp << " 0 0 0 0 "; 
+  if (0)
   {
-    pcl::PointXYZI point = pointCloud[i];
-    txtfile << point.x << " " << point.y << " " << point.z << " " << point.intensity << " ";
+    radar_file << pointCloud.size() << " ";
+    for (size_t i = 0; i < pointCloud.size(); i++)
+    {
+      pcl::PointXYZI point = pointCloud[i];
+      txtfile << point.x << " " << point.y << " " << point.z << " " << point.intensity << " ";
+      radar_file << point.x << " " << point.y << " " << point.z << " " << point.intensity << " " << result[i].doppler << " ";
+
+    }
+    radar_file << std::endl;
+
   }
   txtfile << std::endl;
   sensor_msgs::PointCloud2 pubMsg;
@@ -352,7 +377,7 @@ void RIO::constructFactor(std::vector<Frame::RadarData> &frameRadarData,
   predState.rot = curState.rot * preintegration.getDeltaQ();
   predState.vel = curState.rot * preintegration.getDeltaV() + curState.vel -
                   gravity * preintegration.getTotalTime();
-  std::cout << "radarExParam.rot is " << radarExParam.rot.toRotationMatrix() << std::endl << "radarExParam.vec is " << radarExParam.vec << std::endl;
+  // std::cout << "radarExParam.rot is " << radarExParam.rot.toRotationMatrix() << std::endl << "radarExParam.vec is " << radarExParam.vec << std::endl;
 
   Eigen::Vector3d unbiasedAngularVel =
       imuData.data.back().gyroData - predState.gyroBias;
@@ -373,6 +398,8 @@ void RIO::constructFactor(std::vector<Frame::RadarData> &frameRadarData,
   scan2scanTracker.setPrediction(curRotRadar, curVecRadar, predRotRadar,
                                  predVecRadar, -velInRadar);
   frame = scan2scanTracker.trackPoints(frameRadarData, timeStamp);
+  matchedPoints = frame.matchedPoint;
+  // tracking_points = scan2scanTracker.trackingPoints;
 
   radarData.data.emplace_back(frame);
   radarData.data.back().gyroData = imuData.data.back().gyroData;
@@ -731,6 +758,38 @@ void RIO::publish(const ros::Time &timeStamp) {
   featureMsg.header.frame_id = "world";
   trackingPub.publish(featureMsg);
 
+  pcl::PointCloud<pcl::PointXYZ>::Ptr matchpointspcl(
+      new pcl::PointCloud<pcl::PointXYZ>);
+
+  track_file << matchedPoints.size() << " ";
+
+  for (std::map<uint32_t, Frame::RadarData>::iterator it = matchedPoints.begin(); it != matchedPoints.end(); ++it) {
+    pcl::PointXYZ pt;
+
+    pt.x = it->second.x;
+    pt.y = it->second.y;
+    pt.z = it->second.z;
+  
+    track_file << it->second.x << " " << it->second.y << " " << it->second.z << " " << it->second.intensity << " " << it->second.doppler << " ";
+
+    matchpointspcl->emplace_back(pt);    
+  }
+  track_file << std::endl;
+
+  // for (auto &trackingpoint : trackedPoints) {
+  //   pcl::PointXYZ pt;
+
+  //   pt.x = trackingpoint.data.x;
+  //   pt.y = trackingpoint.data.y;
+  //   pt.z = trackingpoint.data.z;
+  //   trackedpoints->emplace_back(pt);
+
+  // }
+  sensor_msgs::PointCloud2 match_pt_msg;
+  pcl::toROSMsg(*matchpointspcl, match_pt_msg);
+  match_pt_msg.header.frame_id = "radar";
+  trackPtPub.publish(match_pt_msg);
+
   geometry_msgs::PoseStamped pubMsg;
   pubMsg.header.frame_id = "world";
   pubMsg.header.stamp = timeStamp;
@@ -742,7 +801,25 @@ void RIO::publish(const ros::Time &timeStamp) {
   pubMsg.pose.position.y = predState.vec.y();
   pubMsg.pose.position.z = predState.vec.z();
   txtfile << "0 0 0 " << timeStamp.toSec() << " " << pubMsg.pose.orientation.w << " " << pubMsg.pose.orientation.x << " " << pubMsg.pose.orientation.y << " " << pubMsg.pose.orientation.z << " 0 " << pubMsg.pose.position.x << " " << pubMsg.pose.position.y << " " << pubMsg.pose.position.z << std::endl;
+  radar_file << "0 0 0 0 " << timeStamp.toSec() << " 0 " << pubMsg.pose.orientation.w << " " << pubMsg.pose.orientation.x << " " << pubMsg.pose.orientation.y << " " << pubMsg.pose.orientation.z << " 0 0 " << pubMsg.pose.position.x << " " << pubMsg.pose.position.y << " " << pubMsg.pose.position.z << std::endl;
+  track_file << "0 0 0 0 " << timeStamp.toSec() << " 0 " << pubMsg.pose.orientation.w << " " << pubMsg.pose.orientation.x << " " << pubMsg.pose.orientation.y << " " << pubMsg.pose.orientation.z << " 0 0 " << pubMsg.pose.position.x << " " << pubMsg.pose.position.y << " " << pubMsg.pose.position.z << std::endl;
+  filtered_file << "0 0 0 0 " << timeStamp.toSec() << " 0 " << pubMsg.pose.orientation.w << " " << pubMsg.pose.orientation.x << " " << pubMsg.pose.orientation.y << " " << pubMsg.pose.orientation.z << " 0 0 " << pubMsg.pose.position.x << " " << pubMsg.pose.position.y << " " << pubMsg.pose.position.z << std::endl;
+
   posePub.publish(pubMsg);
+
+  tf::Transform transform;
+
+  // Set the translation (x, y, z)
+  transform.setOrigin(tf::Vector3(predState.vec.x(), predState.vec.y(), predState.vec.z())); // Change as needed
+
+  // Set the rotation using a quaternion (x, y, z, w)
+ // Set the rotation using a quaternion (x, y, z, w)
+  tf::Quaternion q(predState.rot.x(), predState.rot.y(), predState.rot.z(), predState.rot.w()); // Example: 90-degree rotation around Z-axis
+
+  transform.setRotation(q);
+
+  // Broadcast the transform with parent and child frame names
+  broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "imu"));
 
   // visualize path
   path.poses.emplace_back(pubMsg);
@@ -773,6 +850,15 @@ void RIO::radarCallback(const sensor_msgs::PointCloud2 &msg) {
 
   radarPreprocessor.process(frameRadarData);
 
+  double timestamp = msg.header.stamp.toSec();
+  // radar_file << "0 0 0 0 " << timestamp << " 0 0 0 0 " << pointCloud.size() << " ";
+
+  for (size_t i = 0; i < frameRadarData.size(); i++)
+  {
+    Frame::RadarData data = frameRadarData[i];
+    filtered_file << data.x << " " << data.y << " " << data.z << " " << data.rcs << " " << data.doppler << " ";
+  }
+  
   // Initialize factor graph
   if ((radarData.size() <= 3 || !init)) {
     factorGraphInit(frameRadarData, msg.header.stamp);
@@ -844,6 +930,26 @@ void RIO::imuCallback(const sensor_msgs::Imu &msg) {
       } else {
         ROS_ERROR("Unknown radar type");
       }
+      static tf2_ros::StaticTransformBroadcaster static_broadcaster;  // For static transform
+
+      geometry_msgs::TransformStamped static_transform;
+      static_transform.header.stamp = ros::Time::now();
+      static_transform.header.frame_id = "imu";    // Parent frame
+      static_transform.child_frame_id = "radar";  // Fixed sensor frame
+
+      // Set fixed translation (x, y, z)
+      static_transform.transform.translation.x = radarExParam.vec.x();
+      static_transform.transform.translation.y = radarExParam.vec.y();
+      static_transform.transform.translation.z = radarExParam.vec.z();
+
+      // Set fixed rotation using quaternion (x, y, z, w)
+      static_transform.transform.rotation.x = radarExParam.rot.coeffs().x();
+      static_transform.transform.rotation.y = radarExParam.rot.coeffs().y();
+      static_transform.transform.rotation.z = radarExParam.rot.coeffs().z();  // 90-degree rotation around Z-axis
+      static_transform.transform.rotation.w = radarExParam.rot.coeffs().w();
+
+      // Publish the static transform (only once)
+      static_broadcaster.sendTransform(static_transform);
 
       init = true;
       std::cout << "g:\n" << gravity << std::endl;
@@ -936,6 +1042,8 @@ void RIO::initRIO() {
                                                             PUB_QUEUE_SIZE);
   trackingPub = nodeHandle.advertise<sensor_msgs::PointCloud2>(trackingPubTopic,
                                                                PUB_QUEUE_SIZE);
+  trackPtPub = nodeHandle.advertise<sensor_msgs::PointCloud2>("/tracked_points",
+                                                               PUB_QUEUE_SIZE);                                                              
   subMapPub = nodeHandle.advertise<sensor_msgs::PointCloud2>(subMapPubTopic,
                                                              PUB_QUEUE_SIZE);
 

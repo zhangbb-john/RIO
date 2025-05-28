@@ -22,20 +22,22 @@
 - [6. Output Data Extraction](#6-output-data-extraction)
   - [6.1. map](#61-map)
     - [6.1.1. /sub\_map\_frame](#611-sub_map_frame)
-    - [6.1.2. /tracking\_frame](#612-tracking_frame)
+    - [6.1.2. /tracking\_frame (trackingPubTopic)](#612-tracking_frame-trackingpubtopic)
       - [6.1.2.1. Is /tracking\_frame the overlap of the current frame with sub\_map?](#6121-is-tracking_frame-the-overlap-of-the-current-frame-with-sub_map)
       - [6.1.2.2. Is radarFeatureFactor.pointRelation contains each point from the current frame, where the point without match turns out to be zeros-match?](#6122-is-radarfeaturefactorpointrelation-contains-each-point-from-the-current-frame-where-the-point-without-match-turns-out-to-be-zeros-match)
+      - [tracking\_frame is world frame right?](#tracking_frame-is-world-frame-right)
   - [6.2. Pose](#62-pose)
     - [6.2.1. /estimated\_pose (world to inertial frame)](#621-estimated_pose-world-to-inertial-frame)
     - [6.2.2. rio](#622-rio)
-- [7. Issue](#7-issue)
-  - [7.1. ERROR: Unable to start XML-RPC server, port 11311 is already in use (just occasionally occurs)](#71-error-unable-to-start-xml-rpc-server-port-11311-is-already-in-use-just-occasionally-occurs)
-  - [7.2. z error is very large](#72-z-error-is-very-large)
-  - [7.3. Bug](#73-bug)
-    - [7.3.1. the rio msg is strange,  always being jumping](#731-the-rio-msg-is-strange--always-being-jumping)
-    - [7.3.2. the header timestamp of radar\_frame is wrong](#732-the-header-timestamp-of-radar_frame-is-wrong)
-    - [7.3.3. the rviz is dark](#733-the-rviz-is-dark)
-- [8. Xu Yang questions](#8-xu-yang-questions)
+- [7. RIO frame management](#7-rio-frame-management)
+- [8. Issue](#8-issue)
+  - [8.1. ERROR: Unable to start XML-RPC server, port 11311 is already in use (just occasionally occurs)](#81-error-unable-to-start-xml-rpc-server-port-11311-is-already-in-use-just-occasionally-occurs)
+  - [8.2. z error is very large](#82-z-error-is-very-large)
+  - [8.3. Bug](#83-bug)
+    - [8.3.1. the rio msg is strange,  always being jumping](#831-the-rio-msg-is-strange--always-being-jumping)
+    - [8.3.2. the header timestamp of radar\_frame is wrong](#832-the-header-timestamp-of-radar_frame-is-wrong)
+    - [8.3.3. the rviz is dark](#833-the-rviz-is-dark)
+- [9. Xu Yang questions](#9-xu-yang-questions)
 
 # 1. Steps to reproduce the results
 ## 1.1. Need docker?
@@ -86,12 +88,16 @@ bash 1
 
 ```
 roscore &
-rviz -d rio/config/RIO.rviz
+rviz -d /ws/src/rio/config/RIO.rviz
 ```
 
 bash 2
 ```
-python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/ars548.yaml -d /ws/src/dataset/exp/Sequence_1.bag -r 1 -p 1
+python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/ars548.yaml -d /ws/src/dataset/exp/Sequence_3.bag -r 1 -p 1
+```
+
+```
+python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/ars548.yaml -d /ws/src/dataset/exp/Sequence_3_modified_gt_horizontal.bag -r 1 -p 1
 ```
 
 ### 1.2.1. coloradar
@@ -157,12 +163,13 @@ it is how many points there are in a single frame.
 
 ![alt text](notion/sub_map.png)
 
-### 6.1.2. /tracking_frame
+### 6.1.2. /tracking_frame (trackingPubTopic)
 ![alt text](notion/tracking_frame.png)
 #### 6.1.2.1. Is /tracking_frame the overlap of the current frame with sub_map?
 Yes
 #### 6.1.2.2. Is radarFeatureFactor.pointRelation contains each point from the current frame, where the point without match turns out to be zeros-match?
 Likely
+#### tracking_frame is world frame right? 
 
 ## 6.2. Pose
 ### 6.2.1. /estimated_pose (world to inertial frame)
@@ -172,11 +179,12 @@ Likely
 seems to be groundtruth, the same name as node name
 
 
- 
+# 7. RIO frame management
+all of the states uses inertial frames as body frames
 
 
-# 7. Issue
-## 7.1. ERROR: Unable to start XML-RPC server, port 11311 is already in use (just occasionally occurs)
+# 8. Issue
+## 8.1. ERROR: Unable to start XML-RPC server, port 11311 is already in use (just occasionally occurs)
 
 ```
 roscore -p 11312
@@ -186,22 +194,22 @@ roscore -p 11312
 export ROS_MASTER_URI=http://localhost:11312
 ```
 
-## 7.2. z error is very large
+## 8.2. z error is very large
 ![alt text](notion/seq3_z_err.png)
 ![alt text](notion/seq1_z_small_err.png)
-## 7.3. Bug
-### 7.3.1. the rio msg is strange,  always being jumping
+## 8.3. Bug
+### 8.3.1. the rio msg is strange,  always being jumping
 ![alt text](notion/rio_bug.gif)
 
-### 7.3.2. the header timestamp of radar_frame is wrong
+### 8.3.2. the header timestamp of radar_frame is wrong
 now it is zero, not very good. 
 also the frame is world, which is not appropriate for visualization.
 
-### 7.3.3. the rviz is dark
+### 8.3.3. the rviz is dark
 we can adjust window size in the rviz file, makeing it smaller.
 
 sometimes retry many times can help alleviate the problem.
 
 other times waiting and retrying are okay.
 
-# 8. Xu Yang questions
+# 9. Xu Yang questions

@@ -125,6 +125,7 @@ std::vector<uchar> RadarTracker::searchCorrsponding(
   std::vector<uchar> result;
   detectedPoints.clear();
   undetectedPoints.clear();
+  std::cout << previousPoints.size() << " : previousPoints.size" << std::endl;
   std::vector<uchar> undetectedStatus(currentPoints.size(), 1);
   std::vector<std::pair<int, double>> matchScore(currentPoints.size(), {-1, 0});
 
