@@ -1,15 +1,23 @@
+import sys
 import rosbag
+
 import numpy as np
 from geometry_msgs.msg import Pose, Point, Quaternion
 from nav_msgs.msg import Odometry
 
 # Define the rotation matrix R and the offset
 
-input_bag_path = "../rio_output_seq3_2025-02-13-15-38-25-0_10.bag"
-output_bag_path = "../rio_output_seq3_2025-02-13-15-38-25-0_10_modified_altitude0.bag"
+# input_bag_path = "../rio_output_seq3_2025-06-10-03-01-05.bag"
+# output_bag_path = "../rio_output_seq3_2025-06-10-03-01-05_modified_altitude0.bag"
+if len(sys.argv) < 2:
+    print("Usage: python modify_bag_pos_zero.py <input_bag_file>")
+    sys.exit(1)
+
+input_bag_path = sys.argv[1]
+output_bag_path = input_bag_path[:-4] + "_modified_altitude0.bag"
 gt_topic = '/lidar_ground_truth'
 odom_topic = '/estimated_pose'
-gt_topic = '/pos_vel_mocap/odom_TA'
+# gt_topic = '/pos_vel_mocap/odom_TA'
 
 num_topic = 0
 # Open input bag for reading

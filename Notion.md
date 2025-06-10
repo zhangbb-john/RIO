@@ -5,8 +5,9 @@
   - [1.2. ROS](#12-ros)
     - [1.2.1. coloradar](#121-coloradar)
     - [1.2.2. reproduce the groundtruth](#122-reproduce-the-groundtruth)
-    - [1.2.3. demo](#123-demo)
-    - [1.2.4. rqt\_graph](#124-rqt_graph)
+    - [1.2.3. modify\_bag\_gt](#123-modify_bag_gt)
+    - [1.2.4. demo](#124-demo)
+    - [1.2.5. rqt\_graph](#125-rqt_graph)
 - [2. Code interpretation](#2-code-interpretation)
   - [2.1. what is frame](#21-what-is-frame)
 - [3. inherit from vins-mono](#3-inherit-from-vins-mono)
@@ -25,7 +26,7 @@
     - [6.1.2. /tracking\_frame (trackingPubTopic)](#612-tracking_frame-trackingpubtopic)
       - [6.1.2.1. Is /tracking\_frame the overlap of the current frame with sub\_map?](#6121-is-tracking_frame-the-overlap-of-the-current-frame-with-sub_map)
       - [6.1.2.2. Is radarFeatureFactor.pointRelation contains each point from the current frame, where the point without match turns out to be zeros-match?](#6122-is-radarfeaturefactorpointrelation-contains-each-point-from-the-current-frame-where-the-point-without-match-turns-out-to-be-zeros-match)
-      - [tracking\_frame is world frame right?](#tracking_frame-is-world-frame-right)
+      - [6.1.2.3. tracking\_frame is world frame right?](#6123-tracking_frame-is-world-frame-right)
   - [6.2. Pose](#62-pose)
     - [6.2.1. /estimated\_pose (world to inertial frame)](#621-estimated_pose-world-to-inertial-frame)
     - [6.2.2. rio](#622-rio)
@@ -93,31 +94,57 @@ rviz -d /ws/src/rio/config/RIO.rviz
 
 bash 2
 ```
-python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/ars548.yaml -d /ws/src/dataset/exp/Sequence_3.bag -r 1 -p 1
+python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/ars548.yaml -d /ws/src/dataset/exp/Sequence_1.bag -r 1 -p 1
 ```
 
 ```
-python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/ars548.yaml -d /ws/src/dataset/exp/Sequence_3_modified_gt_horizontal.bag -r 1 -p 1
+python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/ars548.yaml -d /ws/src/dataset/exp/Sequence_3_modified_gt_horizontal2.bag -r 1 -p 1
 ```
 
 ### 1.2.1. coloradar
-python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/coloradar.yaml -d dataset/coloradar_trim/colo_trim_outdoors_run_0_modified_gt2.bag -r 1 -p 1
+python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/coloradar.yaml -d dataset/coloradar_trim/colo_trim_outdoors_run_0_modified_gt3.bag -r 1 -p 1
+
+python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/coloradar.yaml -d dataset/coloradar_trim/aspen_run0_compressed_modified_gt3.bag -r 1 -p 1
+
+python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/coloradar.yaml -d dataset/coloradar_trim/edgar_classroom_run0_compressed.bag -r 1 -p 1
+
+python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/coloradar.yaml -d dataset/coloradar_trim/ec_hallways_run0_compressed.bag -r 1 -p 1
+
+python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/coloradar.yaml -d dataset/coloradar_trim/arpg_lab_run0_compressed.bag -r 1 -p 1
+
+arpg_lab_run0_compressed
+python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/coloradar.yaml -d dataset/coloradar_trim/aspen_run0_compressed.bag -r 1 -p 1
 
 python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/coloradar.yaml -d dataset/coloradar_trim/colo_trim_outdoors_run_0_modified_gt2.bag -r 1 -p 1
 
-python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/coloradar.yaml -d dataset/coloradar_trim/classroom3.bag -r 1 -p 1
+python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/coloradar.yaml -d ./dataset/coloradar_trim/ec_hallways_run0_compressed_modified_gt6.bag  -r 1 -p 1
 
-python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/coloradar.yaml -d dataset/coloradar_trim/classroom3_modified_gt_horizontal.bag -r 1 -p 1
+python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/coloradar.yaml -d dataset/coloradar_trim/aspen_run0_compressed.bag -r 1 -p 1
+
 
 ### 1.2.2. reproduce the groundtruth
 evo_ape bag ./rio_output_seq3_2025-02-09-13-43-21_0.2toend.bag /estimated_pose /lidar_ground_truth -va --plot_mode xy --plot  --t_max_diff 0.05
+evo_ape bag ./rio_output_seq3_2025-06-10-03-01-05.bag /estimated_pose /lidar_ground_truth -va --plot_mode xy --plot  --t_max_diff 0.05
+
+### 1.2.3. modify_bag_gt
+python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/coloradar.yaml -d ./dataset/coloradar_trim/classroom3_modified_gt_horizontal.bag  -r 1 -p 1
+
+python3 modify_bag_pos_zero.py   ../rio_output_seq3_2025-06-10-04-55-52.bag
+
+evo_ape bag ../rio_output_seq3_2025-06-10-06-31-13_modified_altitude0.bag /lidar_ground_truth  /estimated_pose  -va --plot_mode xy --plot  --t_max_diff 0.05
+
+python3 modify_bag_gt.py
+
+python3 /ws/src/docker/run.py -a -n rio -c /ws/src/rio/config/coloradar.yaml -d ./dataset/coloradar_trim/classroom3_modified_gt_horizontal.bag  -r 1 -p 1
 
 
-### 1.2.3. demo
+root@ubuntu-Legion-Y9000P-IRX9:/ws/src/dataset/coloradar_trim# rostopic echo -b ./ec_hallways_run0_compressed_modified_gt6.bag -p /lidar_ground_truth >> gt.csv
+
+### 1.2.4. demo
 ![alt text](notion/rio_seq1.gif)
 ![alt text](notion/seq1.png)
 ![alt text](notion/seq3_result.png)
-### 1.2.4. rqt_graph 
+### 1.2.5. rqt_graph 
 
 ![alt text](notion/rqtgraph.png)
 
@@ -169,7 +196,7 @@ it is how many points there are in a single frame.
 Yes
 #### 6.1.2.2. Is radarFeatureFactor.pointRelation contains each point from the current frame, where the point without match turns out to be zeros-match?
 Likely
-#### tracking_frame is world frame right? 
+#### 6.1.2.3. tracking_frame is world frame right? 
 
 ## 6.2. Pose
 ### 6.2.1. /estimated_pose (world to inertial frame)
